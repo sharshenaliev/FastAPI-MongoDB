@@ -1,0 +1,35 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_container
+#    command:
+#      - '--logpath'
+#      - '/var/log/mongodb/mongod.log'
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./docker/mongodb_data:/data/db
+    env_file: .env
+    restart: always
+
+  mongo-express:
+    image: mongo-express:latest
+    restart: always
+    ports:
+      - "8081:8081"
+    env_file: .env
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+
+  app:
+    build: .
+    container_name: fastapi_container
+    ports:
+      - "8000:8000"
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: always
+    env_file: .env
+    volumes:
+      - .:/app
+    depends_on:
+      - mongodb
